@@ -1,19 +1,29 @@
-function showCountries(event) {
+async function showCountries(event) {
   const continentCode = event.target.value
-  fetchCountries(continentCode)
+  const countries = await fetchCountries(continentCode)
+  const ul = document.querySelector('ul')
+  ul.innerHTML = ''
+  countries.forEach((country) => {
+    const li = document.createElement('li')
+    li.textContent = country.name
+    ul.appendChild(li)
+  })
 }
 
 async function fetchCountries(continentCode) {
-  const { continent } = await graphqlQuery(`
-    query getCountries($code: ID!) {
-      continent(code: $code) {
-        countries {
-          name
+  const { continent } = await graphqlQuery(
+    `
+      query getCountries($code: ID!) {
+        continent(code: $code) {
+          countries {
+            name
+          }
         }
       }
-    }
-  `, { code: continentCode })
-  console.table(continent.countries)
+    `,
+    { code: continentCode }
+  )
+  return continent.countries
 }
 
 async function fillContinentDropdown() {
