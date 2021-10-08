@@ -1,60 +1,32 @@
+import { fetchContinents, fetchCountries } from './countries.graphql.js'
+
 async function showCountries(event) {
   const continentCode = event.target.value
   const countries = await fetchCountries(continentCode)
   const ul = document.querySelector('ul')
+
   ul.innerHTML = ''
-  countries.forEach((country) => {
+
+  const createItem = (country) => {
     const li = document.createElement('li')
     li.textContent = country.name
     ul.appendChild(li)
-  })
-}
+  }
 
-async function fetchCountries(continentCode) {
-  const { continent } = await graphqlQuery(
-    `
-      query getCountries($code: ID!) {
-        continent(code: $code) {
-          countries {
-            name
-          }
-        }
-      }
-    `,
-    { code: continentCode }
-  )
-  return continent.countries
+  countries.forEach(createItem)
 }
 
 async function fillContinentDropdown() {
-  const { continents } = await graphqlQuery(`
-    query getContinents {
-      continents {
-        code
-        name
-      }
-    }
-  `)
+  const continents = await fetchContinents()
   const select = document.querySelector('select')
+
   const createOption = (continent) => {
     const option = new Option(continent.name, continent.code)
     select.appendChild(option)
   }
+
   continents.forEach(createOption)
   select.addEventListener('change', showCountries)
-}
-
-async function graphqlQuery(query, variables) {
-  const response = await fetch('https://countries.trevorblades.com/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: query,
-      variables: variables
-    })
-  })
-  const jsonObject = await response.json()
-  return jsonObject.data
 }
 
 fillContinentDropdown()
